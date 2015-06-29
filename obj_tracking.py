@@ -150,6 +150,9 @@ class Tracker:
 
         #Select good points
         good_points = all_points[st == 1]
+        old_points = self.points[st == 1]
+
+        self.rect.translate(good_points.mean(0) - old_points.mean(0))
 
         self.old_gray = frame_gray.copy()
         self.points = good_points.reshape(-1, 1, 2)
@@ -159,15 +162,8 @@ class Tracker:
 
         self.old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-        # Make a rectangular mask for the goodFeatures func -- todo improve
+        # Make a rectangular mask for the goodFeatures func
         rect_mask = self.rect.make_mask(frame.shape[0:2])
-
-        # px_max = max(self.p1[0], self.p2[0])
-        # py_max = max(self.p1[1], self.p2[1])
-        # px_min = min(self.p1[0], self.p2[0])
-        # py_min = min(self.p1[1], self.p2[1])
-        # rect_mask[py_min:py_max, px_min:px_max] = ones_array[py_min:py_max, px_min:px_max]
-
         self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
         
     def get_points(self):
