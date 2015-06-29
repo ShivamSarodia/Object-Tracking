@@ -92,15 +92,13 @@ class Tracker:
         self.old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         #make rectangular mask for the image -- todo find better way
-        rect_mask = np.zeros(frame.shape, np.uint8)
+        rect_mask = np.zeros(frame.shape[0:2], np.uint8)
         px_max = max(p1[0], p2[0])
         py_max = max(p1[1], p2[1])
         px_min = min(p1[0], p2[0])
         py_min = min(p1[1], p2[1])
-        rect_mask[px_min:px_max, py_min:py_max] = np.ones((px_max - px_min, py_max - py_min, frame.shape[2]))
+        rect_mask[px_min:px_max, py_min:py_max] = np.ones((px_max - px_min, py_max - py_min))
 
-        print(rect_mask.shape)
-        print(frame.shape)
         self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
         
     def tick(self, frame):
