@@ -159,7 +159,7 @@ class Tracker:
         self.old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
         # Make a rectangular mask for the goodFeatures func -- todo improve
-        rect_mask = self.rect.make_mask(frame.shape[0:2]
+        rect_mask = self.rect.make_mask(frame.shape[0:2])
 
         # px_max = max(self.p1[0], self.p2[0])
         # py_max = max(self.p1[1], self.p2[1])
