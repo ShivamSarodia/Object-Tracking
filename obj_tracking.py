@@ -152,7 +152,7 @@ class Tracker:
                       maxLevel = 2,
                       criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
-    reload_points = 0.5
+    reload_thresh = 0.5
 
     def __init__(self, frame, rect):
         self.rect = rect
@@ -167,7 +167,7 @@ class Tracker:
         good_points = all_points[st == 1]
         old_points = self.points[st == 1]
 
-        if len(good_points) < self.reload_points * self.orig_num_points:
+        if len(good_points) < self.reload_thresh * self.orig_num_points:
             self.reload_points(frame)
 
         #Translate the rectangle based on mean of the points
