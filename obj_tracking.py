@@ -44,6 +44,7 @@ class Rect:
 
     def translate(self, transvect):
         delX = int(transvect[0] + 0.5)
+        delY = int(transvect[1] + 0.5)
         self.p1 = (self.p1[0] + delX, self.p1[1] + delY)
         self.p2 = (self.p2[0] + delX, self.p2[1] + delY)
         self.p3 = (self.p3[0] + delX, self.p3[1] + delY)
