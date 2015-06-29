@@ -98,7 +98,9 @@ class Tracker:
         px_min = min(p1[0], p2[0])
         py_min = min(p1[1], p2[1])
         rect_mask[px_min:px_max, py_min:py_max] = np.ones((px_max - px_min, py_max - py_min, frame.shape[2]))
-        
+
+        print(rect_mask.shape)
+        print(frame.shape)
         self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
         
     def tick(self, frame):
