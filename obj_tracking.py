@@ -94,7 +94,7 @@ class Tracker:
         
     def tick(self, frame):
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        all_points, st, err = cv2.calcOpticalFlowPyrLK(self.old_gray, frame_gray, self.points, None, **lk_params)
+        all_points, st, err = cv2.calcOpticalFlowPyrLK(self.old_gray, frame_gray, self.points, None, **self.lk_params)
 
         #Select good points
         good_new = all_points[st == 1]
