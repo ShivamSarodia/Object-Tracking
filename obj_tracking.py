@@ -88,20 +88,15 @@ class Tracker:
     def __init__(self, frame, p1, p2):
         self.p1 = p1
         self.p2 = p2
-        
-        self.old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        #make rectangular mask for the image -- todo find better way
-        rect_mask = np.zeros(frame.shape[0:2], np.uint8)
-        ones_array = np.ones(frame.shape[0:2], np.uint8)
-        px_max = max(p1[0], p2[0])
-        py_max = max(p1[1], p2[1])
-        px_min = min(p1[0], p2[0])
-        py_min = min(p1[1], p2[1])
-        rect_mask[py_min:py_max, px_min:px_max] = ones_array[py_min:py_max, px_min:px_max]
+        reload_points(frame)
 
-        self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
-        
+        mean = self.points.mean(axis = 0)
+        self.orig_meanx = mean[0][0]
+        self.orig_meany = mean[0][1]
+        self.orig_p1 = self.p1
+        self.orig_p2 = self.p2
+
     def tick(self, frame):
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         all_points, st, err = cv2.calcOpticalFlowPyrLK(self.old_gray, frame_gray, self.points, None, **self.lk_params)
@@ -113,6 +108,28 @@ class Tracker:
         self.old_gray = frame_gray.copy()
         self.points = good_new.reshape(-1, 1, 2)
 
+        mean = self.points.mean(axis=0)
+        self.p1[0] = self.orig_p1[0] + mean[0][0] - self.orig_meanx
+        self.p2[0] = self.orig_p2[0] + mean[0][0] - self.orig_meanx
+        self.p1[1] = self.orig_p1[1] + mean[0][1] - self.orig_meany
+        self.p2[1] = self.orig_p2[1] + mean[0][1] - self.orig_meany
+        
+    def reload_points(self, frame):
+        """Redraws suitable points in the range being observed"""
+
+        self.old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        # Make a rectangular mask for the goodFeatures func -- todo improve
+        rect_mask = np.zeros(frame.shape[0:2], np.uint8)
+        ones_array = np.ones(frame.shape[0:2], np.uint8)
+        px_max = max(self.p1[0], self.p2[0])
+        py_max = max(self.p1[1], self.p2[1])
+        px_min = min(self.p1[0], self.p2[0])
+        py_min = min(self.p1[1], self.p2[1])
+        rect_mask[py_min:py_max, px_min:px_max] = ones_array[py_min:py_max, px_min:px_max]
+
+        self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
+        
     def get_points(self):
         return self.points
 
