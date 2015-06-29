@@ -50,6 +50,7 @@ class Rect:
 
     def transform(self, M):
         new_verts = np.dot(np.array([self.p1, self.p2, self.p3, self.p4]), M)
+        print(new_verts)
         self.p1 = new_verts[0]
         self.p2 = new_verts[1]
         self.p3 = new_verts[2]
