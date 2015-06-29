@@ -63,6 +63,7 @@ class Display:
         frame = cv2.rectangle(frame, p1, p2, 0) #draw the rectangle
 
         for point in points: #draw the points
+            print(point)
             frame = cv2.circle(frame, point, **self.circle_params)
             
         cv2.imshow(self.win, frame) #show the frame
@@ -91,7 +92,6 @@ class Tracker:
         
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         self.points = cv2.goodFeaturesToTrack(gray, mask = None, **self.feature_params)
-        print(self.points)
         
     def tick(self, frame):
         pass
