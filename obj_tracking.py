@@ -152,6 +152,8 @@ class Tracker:
                       maxLevel = 2,
                       criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
+    reload_points = 0.5
+
     def __init__(self, frame, rect):
         self.rect = rect
 
@@ -164,6 +166,9 @@ class Tracker:
         #Select good points
         good_points = all_points[st == 1]
         old_points = self.points[st == 1]
+
+        if len(good_points) < reload_points * self.orig_num_points:
+            self.reload_points(frame)
 
         #Translate the rectangle based on mean of the points
         self.rect.translate(good_points.mean(0) - old_points.mean(0))
@@ -185,6 +190,8 @@ class Tracker:
         # Make a rectangular mask for the goodFeatures func
         rect_mask = self.rect.make_mask(frame.shape[0:2])
         self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
+        self.orig_num_points = len(self.points)
+        print(self.orig_num_points)
         
     def get_points(self):
         return self.points
