@@ -165,7 +165,7 @@ while running:
         rect_p1 = tracker.get_p1()
         rect_p2 = tracker.get_p2()
         points = tracker.get_points()
-        if not points: points = [] #sometimes points == None on close
+        if points is None: points = [] #covers for when points is None on close
 
         running = display.tick(frame, rect_p1, rect_p2, points)
         
