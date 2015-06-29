@@ -82,7 +82,7 @@ class Tracker:
         self.p2 = p2
         
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        self.points = cv2.goodFeaturesToTrack(gray, mask = None, **feature_params)
+        self.points = cv2.goodFeaturesToTrack(gray, mask = None, **self.feature_params)
 
     def tick(self, frame):
         pass
