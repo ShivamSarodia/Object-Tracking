@@ -89,30 +89,17 @@ class Tracker:
         self.p1 = p1
         self.p2 = p2
 
-        reload_points(frame)
-
-        mean = self.points.mean(axis = 0)
-        self.orig_meanx = mean[0][0]
-        self.orig_meany = mean[0][1]
-        self.orig_p1 = self.p1
-        self.orig_p2 = self.p2
+        self.reload_points(frame)
 
     def tick(self, frame):
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         all_points, st, err = cv2.calcOpticalFlowPyrLK(self.old_gray, frame_gray, self.points, None, **self.lk_params)
 
         #Select good points
-        good_new = all_points[st == 1]
-        good_old = all_points[st == 0]
+        good_points = all_points[st == 1]
 
         self.old_gray = frame_gray.copy()
-        self.points = good_new.reshape(-1, 1, 2)
-
-        mean = self.points.mean(axis=0)
-        self.p1[0] = self.orig_p1[0] + mean[0][0] - self.orig_meanx
-        self.p2[0] = self.orig_p2[0] + mean[0][0] - self.orig_meanx
-        self.p1[1] = self.orig_p1[1] + mean[0][1] - self.orig_meany
-        self.p2[1] = self.orig_p2[1] + mean[0][1] - self.orig_meany
+        self.points = good_points.reshape(-1, 1, 2)
         
     def reload_points(self, frame):
         """Redraws suitable points in the range being observed"""
