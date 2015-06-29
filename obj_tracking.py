@@ -16,27 +16,22 @@ class Select:
         self.p2 = None #opposite corner of the rectangle
     
     def mouse_callback(self, event, x, y, flags, param):
-        print("Callback" + str(event))
+        if event == cv2.EVENT_LBUTTONDOWN:
+            self.p1 = (x,y)
+            self.p2 = (x,y)
+            self.status = self.JUST_CLEARED
+            print("Just cleared")
 
-        if event == cv2.EVENT_MOUSEMOVE:
-            print(x, y)
+        elif event == cv2.EVENT_MOUSEMOVE:
+            if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
+                self.p2 = (x,y)
+                print("Mouse move")
         
-        # if event == cv2.EVENT_LBUTTONDOWN:
-        #     self.p1 = (x,y)
-        #     self.p2 = (x,y)
-        #     self.status = self.JUST_CLEARED
-        #     print("Just cleared")
-
-        # elif event == cv2.EVENT_MOUSEMOVE:
-        #     if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
-        #         self.p2 = (x,y)
-        #         print("Mouse move")
-        
-        # elif event == cv2.EVENT_LBUTTONUP:
-        #     if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
-        #         self.p2 = (x,y)
-        #         self.status = self.JUST_SELECTED
-        #         print("Just selected")
+        elif event == cv2.EVENT_LBUTTONUP:
+            if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
+                self.p2 = (x,y)
+                self.status = self.JUST_SELECTED
+                print("Just selected")
 
     def get_status(self):
         retval = self.status
@@ -86,9 +81,6 @@ select = Select()
 cv2.namedWindow(win_name)
 cv2.setMouseCallback(win_name, select.mouse_callback)
 cap = cv2.VideoCapture(0)
-
-cap.set(3, 640)
-cap.set(4, 480)
 
 for i in range(0, 10): cap.read() #run through a few frames because the first couple are black
 
