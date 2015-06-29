@@ -110,12 +110,13 @@ cap = cv2.VideoCapture(0)
 for i in range(0, 10): cap.read() #run through a few frames because the first couple are black
 
 running = True
+tracker = None
+
 while running:
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1) #flip the image horizontally because it's more intuitive
 
     status = select.get_status()
-    tracker = None
 
     if status == select.NONE:
         #no rectangle has been selected yet
@@ -131,11 +132,8 @@ while running:
     elif status == select.JUST_SELECTED or status == select.SELECTED:
         #rectangle has been selected
         if status == select.JUST_SELECTED: #if new selection, create new Tracker
-            print("Tracker was set")
             tracker = Tracker(frame, select.get_p1(), select.get_p2())
-            print(str(tracker))
             
-        print(str(tracker))
         rect_p1 = tracker.get_p1()
         rect_p2 = tracker.get_p2()
         points = tracker.get_points()
