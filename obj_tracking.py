@@ -43,10 +43,10 @@ class Rect:
         return all(checks)
 
     def translate(self, transvect):
-        self.p1 = (self.p1[0] + transvect[0], self.p1[1] + transvect[1])
-        self.p2 = (self.p2[0] + transvect[0], self.p2[1] + transvect[1])
-        self.p3 = (self.p3[0] + transvect[0], self.p3[1] + transvect[1])
-        self.p4 = (self.p4[0] + transvect[0], self.p4[1] + transvect[1])
+        self.p1 = (self.p1[0] + int(transvect[0]), self.p1[1] + int(transvect[1]))
+        self.p2 = (self.p2[0] + int(transvect[0]), self.p2[1] + int(transvect[1]))
+        self.p3 = (self.p3[0] + int(transvect[0]), self.p3[1] + int(transvect[1]))
+        self.p4 = (self.p4[0] + int(transvect[0]), self.p4[1] + int(transvect[1]))
                 
     def get_p1(self):
         return self.p1
@@ -152,7 +152,7 @@ class Tracker:
         good_points = all_points[st == 1]
         old_points = self.points[st == 1]
 
-        self.rect.translate(int(good_points.mean(0)) - int(old_points.mean(0)))
+        self.rect.translate(good_points.mean(0) - old_points.mean(0))
 
         self.old_gray = frame_gray.copy()
         self.points = good_points.reshape(-1, 1, 2)
