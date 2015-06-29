@@ -98,7 +98,7 @@ class Tracker:
         py_max = max(p1[1], p2[1])
         px_min = min(p1[0], p2[0])
         py_min = min(p1[1], p2[1])
-        rect_mask[px_min:px_max, py_min:py_max] = ones_array[px_min:px_max, py_min:py_max]
+        rect_mask[py_min:py_max, px_min:px_max] = ones_array[py_min:py_max, px_min:px_max]
 
         self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
         
