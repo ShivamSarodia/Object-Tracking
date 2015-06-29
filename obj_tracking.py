@@ -167,7 +167,7 @@ class Tracker:
         good_points = all_points[st == 1]
         old_points = self.points[st == 1]
 
-        if len(good_points) < reload_points * self.orig_num_points:
+        if len(good_points) < self.reload_points * self.orig_num_points:
             self.reload_points(frame)
 
         #Translate the rectangle based on mean of the points
