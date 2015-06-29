@@ -64,7 +64,7 @@ class Display:
 
         for point in points: #draw the points
             frame = cv2.circle(frame, (point[0][0], point[0][1]), **self.circle_params)
-            
+
         cv2.imshow(self.win, frame) #show the frame
 
         if cv2.waitKey(10) == ord("q"):
@@ -76,7 +76,7 @@ class Tracker:
     """ Class for handling the tracking process """
 
     feature_params = dict( maxCorners = 100,
-                           qualityLevel = 0.3,
+                           qualityLevel = 0.1,
                            minDistance = 7,
                            blockSize = 7 )
     
@@ -90,7 +90,16 @@ class Tracker:
         self.p2 = p2
         
         self.old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = None, **self.feature_params)
+
+        #make rectangular mask for the image -- todo find better way
+        rect_mask = np.zeros(frame.shape, np.uint8)
+        px_max = max(p1[0], p2[0])
+        py_max = max(p1[1], p2[1])
+        px_min = min(p1[0], p2[0])
+        py_min = min(p1[1], p2[1])
+        rect_mask[px_min:px_max, py_min:py_max] = np.ones(px_max - px_min, py_max - py_min)
+        
+        self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
         
     def tick(self, frame):
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
