@@ -113,7 +113,8 @@ class Display:
         self.win = win
     
     def tick(self, frame, rect, points):
-        frame = cv2.rectangle(frame, rect.get_p1(), rect.get_p2(), 0) #draw the rectangle
+        if rect is not None:
+            frame = cv2.rectangle(frame, rect.get_p1(), rect.get_p2(), 0) #draw the rectangle
 
         for point in points: #draw the points
             frame = cv2.circle(frame, (point[0][0], point[0][1]), **self.circle_params)
@@ -198,7 +199,7 @@ while running:
 
     if status == select.NONE:
         #no rectangle has been selected yet
-        running = display.tick(frame, None, None, [])
+        running = display.tick(frame, None, [])
 
     elif status == select.JUST_CLEARED or status == select.SELECTING:
         #rectangle being selected
