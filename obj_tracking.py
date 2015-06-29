@@ -43,13 +43,14 @@ class Rect:
         return all(checks)
 
     def translate(self, transvect):
-        self.p1 = (self.p1[0] + int(transvect[0]), self.p1[1] + int(transvect[1]))
-        self.p2 = (self.p2[0] + int(transvect[0]), self.p2[1] + int(transvect[1]))
-        self.p3 = (self.p3[0] + int(transvect[0]), self.p3[1] + int(transvect[1]))
-        self.p4 = (self.p4[0] + int(transvect[0]), self.p4[1] + int(transvect[1]))
+        delX = int(transvect[0] + 0.5)
+        self.p1 = (self.p1[0] + delX, self.p1[1] + delY)
+        self.p2 = (self.p2[0] + delX, self.p2[1] + delY)
+        self.p3 = (self.p3[0] + delX, self.p3[1] + delY)
+        self.p4 = (self.p4[0] + delX, self.p4[1] + delY)
 
     def transform(self, M):
-        new_verts = np.dot(np.array([self.p1, self.p2, self.p3, self.p4]), M).astype(int)
+        new_verts = np.dot(np.array([self.p1, self.p2, self.p3, self.p4]) + 0.5, M).astype(int)
         #print(new_verts)
         self.p1 = tuple(new_verts[0])
         self.p2 = tuple(new_verts[1])
