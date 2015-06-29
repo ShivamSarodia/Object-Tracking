@@ -131,8 +131,11 @@ while running:
     elif status == select.JUST_SELECTED or status == select.SELECTED:
         #rectangle has been selected
         if status == select.JUST_SELECTED: #if new selection, create new Tracker
+            print("Tracker was set")
             tracker = Tracker(frame, select.get_p1(), select.get_p2())
-
+            print(str(tracker))
+            
+        print(str(tracker))
         rect_p1 = tracker.get_p1()
         rect_p2 = tracker.get_p2()
         points = tracker.get_points()
