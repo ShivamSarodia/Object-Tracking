@@ -25,7 +25,6 @@ class Select:
         elif event == cv2.EVENT_MOUSEMOVE:
             if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
                 self.p2 = (x,y)
-                print("Mouse move")
         
         elif event == cv2.EVENT_LBUTTONUP:
             if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
@@ -68,8 +67,34 @@ class Display:
 class Tracker:
     """ Class for handling the tracking process """
 
-    def __init__(self):
+    feature_params = dict( maxCorners = 100,
+                           qualityLevel = 0.3,
+                           minDistance = 7,
+                           blockSize = 7 )
+    
+    # Parameters for lucas kanade optical flow
+    lk_params = dict( winSize  = (15,15),
+                      maxLevel = 2,
+                      criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
+
+    def __init__(self, frame, p1, p2):
+        self.p1 = p1
+        self.p2 = p2
+        
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        self.points = cv2.goodFeaturesToTrack(gray, mask = None, **feature_params)
+
+    def tick(self, frame):
         pass
+
+    def get_points(self):
+        return self.points
+
+    def get_p1(self):
+        return self.p1
+
+    def get_p2(self):
+        return self.p2
 
     
 win_name = "Display"
@@ -90,28 +115,31 @@ while running:
     frame = cv2.flip(frame, 1) #flip the image horizontally because it's more intuitive
 
     status = select.get_status()
-    rect_p1 = select.get_p1()
-    rect_p2 = select.get_p2()
+    tracker = None
 
     if status == select.NONE:
+        #no rectangle has been selected yet
         running = display.tick(frame, None, None, None)
 
-    elif status == select.JUST_CLEARED:
+    elif status == select.JUST_CLEARED or status == select.SELECTING:
+        #rectangle being selected
+        tracker = None #clear the tracker
+        rect_p1 = select.get_p1()
+        rect_p2 = select.get_p2()
         running = display.tick(frame, rect_p1, rect_p2, None)
 
-    elif status == select.SELECTING:
-        running = display.tick(frame, rect_p1, rect_p2, None)
+    elif status == select.JUST_SELECTED or status == select.SELECTED:
+        #rectangle has been selected
+        if status == select.JUST_SELECTED: #if new selection, create new Tracker
+            tracker = Tracker(frame, select.get_p1(), select.get_p2())
 
-    elif status == select.JUST_SELECTED:
-        running = display.tick(frame, rect_p1, rect_p2, None) #improve
-
-    elif status == select.SELECTED:
-        running = display.tick(frame, rect_p1, rect_p2, None) #improve
-
-    else:
-        display.tick(frame, None, None, None)
+        rect_p1 = tracker.get_p1()
+        rect_p2 = tracker.get_p2()
+        points = tracker.get_points()
+        running = display.tick(frame, rect_p1, rect_p2, points)
         
-    
-    
+    else: #shouldn't happen
+        display.tick(frame, None, None, None)
+            
 cv2.destroyAllWindows()
 cap.release()
