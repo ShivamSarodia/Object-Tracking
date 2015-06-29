@@ -64,7 +64,7 @@ class Display:
 
         for point in points: #draw the points
             frame = cv2.circle(frame, (point[0][0], point[0][1]), **self.circle_params)
-            
+
         cv2.imshow(self.win, frame) #show the frame
 
         if cv2.waitKey(10) == ord("q"):
@@ -76,7 +76,7 @@ class Tracker:
     """ Class for handling the tracking process """
 
     feature_params = dict( maxCorners = 100,
-                           qualityLevel = 0.3,
+                           qualityLevel = 0.1,
                            minDistance = 7,
                            blockSize = 7 )
     
@@ -89,11 +89,29 @@ class Tracker:
         self.p1 = p1
         self.p2 = p2
         
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        self.points = cv2.goodFeaturesToTrack(gray, mask = None, **self.feature_params)
+        self.old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        #make rectangular mask for the image -- todo find better way
+        rect_mask = np.zeros(frame.shape[0:2], np.uint8)
+        ones_array = np.ones(frame.shape[0:2], np.uint8)
+        px_max = max(p1[0], p2[0])
+        py_max = max(p1[1], p2[1])
+        px_min = min(p1[0], p2[0])
+        py_min = min(p1[1], p2[1])
+        rect_mask[py_min:py_max, px_min:px_max] = ones_array[py_min:py_max, px_min:px_max]
+
+        self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
         
     def tick(self, frame):
-        pass
+        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        all_points, st, err = cv2.calcOpticalFlowPyrLK(self.old_gray, frame_gray, self.points, None, **self.lk_params)
+
+        #Select good points
+        good_new = all_points[st == 1]
+        good_old = all_points[st == 0]
+
+        self.old_gray = frame_gray.copy()
+        self.points = good_new.reshape(-1, 1, 2)
 
     def get_points(self):
         return self.points
@@ -141,10 +159,14 @@ while running:
         #rectangle has been selected
         if status == select.JUST_SELECTED: #if new selection, create new Tracker
             tracker = Tracker(frame, select.get_p1(), select.get_p2())
+        else: #if old selection, tick the tracker
+            tracker.tick(frame)
             
         rect_p1 = tracker.get_p1()
         rect_p2 = tracker.get_p2()
         points = tracker.get_points()
+        if points is None: points = [] #covers for when points is None on close
+
         running = display.tick(frame, rect_p1, rect_p2, points)
         
     else: #shouldn't happen
