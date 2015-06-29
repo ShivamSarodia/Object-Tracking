@@ -7,7 +7,7 @@ class Rect:
         """ If no p3 or p4, makes upright rect """
 
         if p3 is None and p4 is None:
-            self.set_upright(self, p1, p2)
+            self.set_upright(p1, p2)
         else:
             self.p3 = p3
             self.p4 = p4
