@@ -47,6 +47,9 @@ class Rect:
         self.p2 = (self.p2[0] + int(transvect[0]), self.p2[1] + int(transvect[1]))
         self.p3 = (self.p3[0] + int(transvect[0]), self.p3[1] + int(transvect[1]))
         self.p4 = (self.p4[0] + int(transvect[0]), self.p4[1] + int(transvect[1]))
+
+    def transform(self, M):
+        print(M)
                 
     def get_p1(self):
         return self.p1
@@ -152,7 +155,14 @@ class Tracker:
         good_points = all_points[st == 1]
         old_points = self.points[st == 1]
 
+        #Translate the rectangle based on mean of the points
         self.rect.translate(good_points.mean(0) - old_points.mean(0))
+        norm_old = old_points - old_points.mean(0)
+        norm_new = good_points - good_points.mean(0)
+
+        #Find the transformation matrix that best maps old points to new points
+        trans_M = np.dot(np.linalg.pinv(norm_old), norm_new)
+        self.rect.transform(trans_M)
 
         self.old_gray = frame_gray.copy()
         self.points = good_points.reshape(-1, 1, 2)
