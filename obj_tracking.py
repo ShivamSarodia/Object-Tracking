@@ -52,7 +52,7 @@ class Select:
 class Display:
     """ Class for handling the display process """
 
-    circle_params = dict( radius = 10,
+    circle_params = dict( radius = 5,
                           color = 0,
                           thickness = -1 )
 
