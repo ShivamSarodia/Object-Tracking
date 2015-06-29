@@ -56,10 +56,10 @@ class Rect:
         norm_new_verts = np.dot(norm_old_verts + 0.5, M).astype(int)
         new_verts = norm_new_verts + old_verts.mean(0)
         #print(new_verts)
-        # self.p1 = tuple(new_verts[0])
-        # self.p2 = tuple(new_verts[1])
-        # self.p3 = tuple(new_verts[2])
-        # self.p4 = tuple(new_verts[3])
+        self.p1 = tuple(new_verts[0])
+        self.p2 = tuple(new_verts[1])
+        self.p3 = tuple(new_verts[2])
+        self.p4 = tuple(new_verts[3])
                 
     def get_p1(self):
         return self.p1
