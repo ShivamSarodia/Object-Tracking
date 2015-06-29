@@ -1,8 +1,64 @@
 import numpy as np
+import matplotlib.path as path
 import cv2
 
+class Rect:
+    def __init__(self, p1, p2, p3 = None, p4 = None):
+        """ If no p3 or p4, makes upright rect """
+
+        if p3 is None and p4 is None:
+            self.set_upright(self, p1, p2)
+        else:
+            self.p3 = p3
+            self.p4 = p4
+            self.__checkRect()
+
+    def set_upright(self, p1, p2):
+        """ Set this rectangle to an upright rect with p1 and p2 opposites"""
+        self.p1 = p1
+        self.p2 = p2
+        self.p3 = (self.p1[0], self.p2[1])
+        self.p4 = (self.p2[0], self.p1[0])
+
+    def make_mask(self, shape):
+        rect_mask = np.zeros(shape, np.uint8)
+        rect_mask = cv2.fillConvexPoly(rect_mask,
+                                       [self.p1, self.p2, self.p3, self.p4],
+                                       1)
+        return rect_mask
+        
+    def __approx_equal(self, x, y, eps = 0.02):
+        if x != 0:
+            return abs((x - y)/x) < eps
+        elif y != 0:
+            return abs((x - y)/y) < eps
+        else:
+            return True
+
+    def __checkRect(self):
+        checks = [__approx_equal(abs(p1[0] - p3[0]), abs(p2[0] - p4[0])),
+                  __approx_equal(abs(p1[1] - p3[1]), abs(p2[1] - p4[1])),
+                  __approx_equal(abs(p2[0] - p3[0]), abs(p1[0] - p3[0])),
+                  __approx_equal(abs(p2[1] - p3[1]), abs(p1[1] - p3[1]))]
+        return all(checks)
+
+    def translate(self, transvect):
+        self.p1 = (self.p1[0] + transvect[0], self.p1[1] + transvect[1])
+        self.p2 = (self.p2[0] + transvect[0], self.p2[1] + transvect[1])
+        self.p3 = (self.p3[0] + transvect[0], self.p3[1] + transvect[1])
+        self.p4 = (self.p4[0] + transvect[0], self.p4[1] + transvect[1])
+                
+    def get_p1(self):
+        return self.p1
+    def get_p2(self):
+        return self.p2
+    def get_p3(self):
+        return self.p3
+    def get_p4(self):
+        return self.p4        
+
 class Select:
-    """ Class for handling the rectangle select process """
+    """ Class for handling the region select process """
     def __init__(self):
         self.NONE = 0 #no rectangle has been selected
         self.JUST_CLEARED = 4 #user just clicked to start a new rectangle
@@ -12,23 +68,23 @@ class Select:
 
         self.status = self.NONE
 
-        self.p1 = None #one point of the rectangle
-        self.p2 = None #opposite corner of the rectangle
+        self.first_point = None #one point of the rectangle
+        self.rect = None
     
     def mouse_callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
-            self.p1 = (x,y)
-            self.p2 = (x,y)
+            self.first_point = (x,y)
+            self.rect = Rect(self.first_point, (x, y))
             self.status = self.JUST_CLEARED
             print("Just cleared")
 
         elif event == cv2.EVENT_MOUSEMOVE:
             if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
-                self.p2 = (x,y)
+                self.rect.set_upright(self.first_point, (x, y))
         
         elif event == cv2.EVENT_LBUTTONUP:
             if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
-                self.p2 = (x,y)
+                self.rect.set_upright(self.first_point, (x, y))
                 self.status = self.JUST_SELECTED
                 print("Just selected")
 
@@ -43,12 +99,9 @@ class Select:
             
         return retval
 
-    def get_p1(self):
-        return self.p1
-
-    def get_p2(self):
-        return self.p2
-
+    def get_rect(self):
+        return self.rect
+    
 class Display:
     """ Class for handling the display process """
 
@@ -59,8 +112,8 @@ class Display:
     def __init__(self, win):
         self.win = win
     
-    def tick(self, frame, p1, p2, points):
-        frame = cv2.rectangle(frame, p1, p2, 0) #draw the rectangle
+    def tick(self, frame, rect, points):
+        frame = cv2.rectangle(frame, rect.get_p1(), rect.get_p2(), 0) #draw the rectangle
 
         for point in points: #draw the points
             frame = cv2.circle(frame, (point[0][0], point[0][1]), **self.circle_params)
@@ -85,9 +138,8 @@ class Tracker:
                       maxLevel = 2,
                       criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
-    def __init__(self, frame, p1, p2):
-        self.p1 = p1
-        self.p2 = p2
+    def __init__(self, frame, rect):
+        self.rect = rect
 
         self.reload_points(frame)
 
@@ -107,25 +159,21 @@ class Tracker:
         self.old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
         # Make a rectangular mask for the goodFeatures func -- todo improve
-        rect_mask = np.zeros(frame.shape[0:2], np.uint8)
-        ones_array = np.ones(frame.shape[0:2], np.uint8)
-        px_max = max(self.p1[0], self.p2[0])
-        py_max = max(self.p1[1], self.p2[1])
-        px_min = min(self.p1[0], self.p2[0])
-        py_min = min(self.p1[1], self.p2[1])
-        rect_mask[py_min:py_max, px_min:px_max] = ones_array[py_min:py_max, px_min:px_max]
+        rect_mask = self.rect.make_mask(frame.shape[0:2]
+
+        # px_max = max(self.p1[0], self.p2[0])
+        # py_max = max(self.p1[1], self.p2[1])
+        # px_min = min(self.p1[0], self.p2[0])
+        # py_min = min(self.p1[1], self.p2[1])
+        # rect_mask[py_min:py_max, px_min:px_max] = ones_array[py_min:py_max, px_min:px_max]
 
         self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
         
     def get_points(self):
         return self.points
 
-    def get_p1(self):
-        return self.p1
-
-    def get_p2(self):
-        return self.p2
-
+    def get_rect(self):
+        return self.rect
     
 win_name = "Display"
 
@@ -155,23 +203,22 @@ while running:
     elif status == select.JUST_CLEARED or status == select.SELECTING:
         #rectangle being selected
         tracker = None #clear the tracker
-        rect_p1 = select.get_p1()
-        rect_p2 = select.get_p2()
-        running = display.tick(frame, rect_p1, rect_p2, [])
+        rect = select.get_rect()
+        running = display.tick(frame, rect, [])
 
     elif status == select.JUST_SELECTED or status == select.SELECTED:
         #rectangle has been selected
         if status == select.JUST_SELECTED: #if new selection, create new Tracker
-            tracker = Tracker(frame, select.get_p1(), select.get_p2())
+            tracker = Tracker(frame, select.get_rect())
         else: #if old selection, tick the tracker
             tracker.tick(frame)
             
-        rect_p1 = tracker.get_p1()
-        rect_p2 = tracker.get_p2()
+
+        rect = tracker.get_rect()
         points = tracker.get_points()
         if points is None: points = [] #covers for when points is None on close
 
-        running = display.tick(frame, rect_p1, rect_p2, points)
+        running = display.tick(frame, rect, points)
         
     else: #shouldn't happen
         display.tick(frame, None, None, [])
