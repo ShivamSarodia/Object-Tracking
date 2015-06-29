@@ -53,10 +53,10 @@ class Rect:
     def transform(self, M):
         new_verts = np.dot(np.array([self.p1, self.p2, self.p3, self.p4]) + 0.5, M).astype(int)
         #print(new_verts)
-        self.p1 = tuple(new_verts[0])
-        self.p2 = tuple(new_verts[1])
-        self.p3 = tuple(new_verts[2])
-        self.p4 = tuple(new_verts[3])
+        # self.p1 = tuple(new_verts[0])
+        # self.p2 = tuple(new_verts[1])
+        # self.p3 = tuple(new_verts[2])
+        # self.p4 = tuple(new_verts[3])
                 
     def get_p1(self):
         return self.p1
