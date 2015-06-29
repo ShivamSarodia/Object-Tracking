@@ -128,14 +128,14 @@ while running:
 
     if status == select.NONE:
         #no rectangle has been selected yet
-        running = display.tick(frame, None, None, None)
+        running = display.tick(frame, None, None, [])
 
     elif status == select.JUST_CLEARED or status == select.SELECTING:
         #rectangle being selected
         tracker = None #clear the tracker
         rect_p1 = select.get_p1()
         rect_p2 = select.get_p2()
-        running = display.tick(frame, rect_p1, rect_p2, None)
+        running = display.tick(frame, rect_p1, rect_p2, [])
 
     elif status == select.JUST_SELECTED or status == select.SELECTED:
         #rectangle has been selected
@@ -148,7 +148,7 @@ while running:
         running = display.tick(frame, rect_p1, rect_p2, points)
         
     else: #shouldn't happen
-        display.tick(frame, None, None, None)
+        display.tick(frame, None, None, [])
             
 cv2.destroyAllWindows()
 cap.release()
