@@ -152,7 +152,7 @@ class Tracker:
         good_points = all_points[st == 1]
         old_points = self.points[st == 1]
 
-        self.rect.translate(int(good_points.mean(0) - old_points.mean(0)))
+        self.rect.translate(int(good_points.mean(0)) - int(old_points.mean(0)))
 
         self.old_gray = frame_gray.copy()
         self.points = good_points.reshape(-1, 1, 2)
