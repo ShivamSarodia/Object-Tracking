@@ -49,7 +49,7 @@ class Rect:
         self.p4 = (self.p4[0] + int(transvect[0]), self.p4[1] + int(transvect[1]))
 
     def transform(self, M):
-        new_verts = np.dot(np.array(self.p1, self.p2, self.p3, self.p4), M)
+        new_verts = np.dot(np.array([self.p1, self.p2, self.p3, self.p4]), M)
         self.p1 = new_verts[0]
         self.p2 = new_verts[1]
         self.p3 = new_verts[2]
