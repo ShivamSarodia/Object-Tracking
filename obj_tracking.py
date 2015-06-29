@@ -93,11 +93,12 @@ class Tracker:
 
         #make rectangular mask for the image -- todo find better way
         rect_mask = np.zeros(frame.shape[0:2], np.uint8)
+        ones_array = np.ones(frame.shape[0:2], np.uint8)
         px_max = max(p1[0], p2[0])
         py_max = max(p1[1], p2[1])
         px_min = min(p1[0], p2[0])
         py_min = min(p1[1], p2[1])
-        rect_mask[px_min:px_max, py_min:py_max] = np.ones((px_max - px_min, py_max - py_min))
+        rect_mask[px_min:px_max, py_min:py_max] = ones_array[px_min:px_max, py_min:py_max]
 
         self.points = cv2.goodFeaturesToTrack(self.old_gray, mask = rect_mask, **self.feature_params)
         
@@ -164,6 +165,8 @@ while running:
         rect_p1 = tracker.get_p1()
         rect_p2 = tracker.get_p2()
         points = tracker.get_points()
+        if not points: points = [] #sometimes points == None on close
+
         running = display.tick(frame, rect_p1, rect_p2, points)
         
     else: #shouldn't happen
