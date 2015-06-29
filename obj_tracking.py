@@ -1,5 +1,5 @@
 import numpy as np
-import cv2 as cv
+import cv2
 
 class Select:
     """ Class for handling the rectangle select process """
@@ -16,19 +16,27 @@ class Select:
         self.p2 = None #opposite corner of the rectangle
     
     def mouse_callback(self, event, x, y, flags, param):
-        if event == cv.EVENT_LBUTTONDOWN:
-            self.p1 = (x,y)
-            self.p2 = (x,y)
-            self.status = self.JUST_CLEARED
+        print("Callback" + str(event))
 
-        elif event == cv.EVENT_MOUSEMOVE:
-            if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
-                self.p2 = (x,y)
+        if event == cv2.EVENT_MOUSEMOVE:
+            print(x, y)
         
-        elif event == cv.EVENT_LBUTTONUP:
-            if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
-                self.p2 = (x,y)
-                self.status = self.JUST_SELECTED
+        # if event == cv2.EVENT_LBUTTONDOWN:
+        #     self.p1 = (x,y)
+        #     self.p2 = (x,y)
+        #     self.status = self.JUST_CLEARED
+        #     print("Just cleared")
+
+        # elif event == cv2.EVENT_MOUSEMOVE:
+        #     if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
+        #         self.p2 = (x,y)
+        #         print("Mouse move")
+        
+        # elif event == cv2.EVENT_LBUTTONUP:
+        #     if self.status == self.JUST_CLEARED or self.status == self.SELECTING:
+        #         self.p2 = (x,y)
+        #         self.status = self.JUST_SELECTED
+        #         print("Just selected")
 
     def get_status(self):
         retval = self.status
@@ -37,7 +45,7 @@ class Select:
             self.status = self.SELECTED
 
         elif self.status == self.JUST_CLEARED:
-            self.status = self.CLEARED
+            self.status = self.SELECTING
             
         return retval
 
@@ -54,9 +62,10 @@ class Display:
         self.win = win
     
     def tick(self, frame, p1, p2, points):
-        cv.imshow(self.win, frame)
+        frame = cv2.rectangle(frame, p1, p2, 0)
+        cv2.imshow(self.win, frame)
 
-        if cv.waitKey(1) == ord("q"):
+        if cv2.waitKey(10) == ord("q"):
             return False
 
         return True
@@ -73,13 +82,20 @@ win_name = "Display"
 display = Display(win_name)
 select = Select()
 
-cv.setMouseCallback(win_name, select.mouse_callback)
-cap = cv.VideoCapture(0)
+# Set up window and callback
+cv2.namedWindow(win_name)
+cv2.setMouseCallback(win_name, select.mouse_callback)
+cap = cv2.VideoCapture(0)
+
+cap.set(3, 640)
+cap.set(4, 480)
+
 for i in range(0, 10): cap.read() #run through a few frames because the first couple are black
 
 running = True
 while running:
     ret, frame = cap.read()
+    frame = cv2.flip(frame, 1) #flip the image horizontally because it's more intuitive
 
     status = select.get_status()
     rect_p1 = select.get_p1()
@@ -88,8 +104,8 @@ while running:
     if status == select.NONE:
         running = display.tick(frame, None, None, None)
 
-    elif status == status.JUST_CLEARED:
-        running = display.tick(frame,rect_p1, rect_p2, None)
+    elif status == select.JUST_CLEARED:
+        running = display.tick(frame, rect_p1, rect_p2, None)
 
     elif status == select.SELECTING:
         running = display.tick(frame, rect_p1, rect_p2, None)
@@ -99,8 +115,11 @@ while running:
 
     elif status == select.SELECTED:
         running = display.tick(frame, rect_p1, rect_p2, None) #improve
+
+    else:
+        display.tick(frame, None, None, None)
         
     
     
-cv.destroyAllWindows()
+cv2.destroyAllWindows()
 cap.release()
