@@ -52,10 +52,6 @@ class Select:
 class Display:
     """ Class for handling the display process """
 
-    circle_params = dict( radius = 10,
-                          color = 0,
-                          thickness = -1 )
-
     def __init__(self, win):
         self.win = win
     
@@ -63,7 +59,7 @@ class Display:
         frame = cv2.rectangle(frame, p1, p2, 0) #draw the rectangle
 
         for point in points: #draw the points
-            frame = cv2.circle(frame, point, **self.circle_params)
+            frame = cv2.circle(frame, point, 10, 0, -1)
             
         cv2.imshow(self.win, frame) #show the frame
 
