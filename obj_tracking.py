@@ -23,7 +23,7 @@ class Rect:
     def make_mask(self, shape):
         rect_mask = np.zeros(shape, np.uint8)
         rect_mask = cv2.fillConvexPoly(rect_mask,
-                                       [self.p1, self.p2, self.p3, self.p4],
+                                       np.array([self.p1, self.p2, self.p3, self.p4]),
                                        1)
         return rect_mask
         
