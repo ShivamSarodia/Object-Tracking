@@ -51,7 +51,10 @@ class Rect:
         self.p4 = (self.p4[0] + delX, self.p4[1] + delY)
 
     def transform(self, M):
-        new_verts = np.dot(np.array([self.p1, self.p2, self.p3, self.p4]) + 0.5, M).astype(int)
+        old_verts = np.array([self.p1, self.p2, self.p3, self.p4])
+        norm_old_verts = old_verts - old_verts.mean(0)
+        norm_new_verts = np.dot(norm_old_verts + 0.5, M).astype(int)
+        new_verts = norm_new_verts + old_verts.mean(0)
         #print(new_verts)
         # self.p1 = tuple(new_verts[0])
         # self.p2 = tuple(new_verts[1])
